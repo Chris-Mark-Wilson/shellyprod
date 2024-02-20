@@ -1,20 +1,36 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import 'react-native-gesture-handler';
+import * as React from 'react';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+import { Devices } from './screens/Devices';
+import {PowerMeter} from './screens/PowerMeter';
+import {AddDevice} from './screens/AddDevice'
+import { Settings } from './screens/Settings';
+import { DateProvider,PowerProvider } from './Contexts';
 
+const Drawer = createDrawerNavigator();
 export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+    return (
+      <DateProvider>
+        <PowerProvider>
+      <NavigationContainer>
+        <Drawer.Navigator
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: '#f4511e', 
+            },
+            headerTintColor: '#fff', //text colour 
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}>
+          <Drawer.Screen name="Devices" component={Devices} options={{unmountOnBlur:true}}/>
+           <Drawer.Screen name="Power Meter" component={PowerMeter} options={{unmountOnBlur:true}}/>
+          <Drawer.Screen name="Add Device" component={AddDevice} options={{unmountOnBlur:true}}/>
+          <Drawer.Screen name="Settings" component={Settings} /> 
+        </Drawer.Navigator>
+      </NavigationContainer>
+      </PowerProvider>
+      </DateProvider>
+    );
+  }
