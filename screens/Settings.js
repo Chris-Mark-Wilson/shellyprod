@@ -1,6 +1,6 @@
 import React ,{useContext,useState}from 'react';
 import { View,Text,StyleSheet,TextInput,Alert, Button} from 'react-native';
-import {DatePicker} from '../components/DatePicker';
+
 import { DateContext } from '../Contexts';
 import { clearAllDevices } from '../phoneApi';
 
@@ -27,9 +27,7 @@ export const Settings=({navigagtion})=>{
                 onChangeText={text => setInputValue(text)}
                 value={inputValue}
             />
-            <View style={{flex:0.4,alignItems:"center",justifyContent:"space-around"}}>
-      <DatePicker date={date} setDate={setDate}/>
-      </View>
+   
         </View>
     )
 }

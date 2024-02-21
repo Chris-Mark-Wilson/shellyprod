@@ -1,4 +1,4 @@
-import {View,Text,StyleSheet,Pressable,FlatList} from 'react-native';
+import {View,Text,StyleSheet,Pressable,FlatList,Alert} from 'react-native';
 import React, { useEffect,useState,useContext } from 'react';
 
 import { getData } from '../phoneApi';
@@ -9,30 +9,35 @@ export const Devices=({navigation})=>{
     const [isLoading,setIsLoading]=useState(false)
     const {setPowerMeterId,
             setPowerMeterServer,
-            setPowerMeterAuth}=useContext(PowerContext)
+            setPowerMeterAuth,
+        setPowerMeterStartDate}=useContext(PowerContext)
 
     useEffect(()=>{
         setIsLoading(true)
         getData('devices')
         .then(response=>{
             if(response){
-            console.log(response,'response in Devices')
+            // console.log(response,' \nresponse in Devices\n\n')
             const deviceNames=Object.keys(response)
-            console.log(deviceNames)
+            // console.log(deviceNames)
             let deviceArray=[]
             deviceNames.forEach(device=>{
                 const deviceData=response[device]
                 const name=device
-                console.log(deviceData,'deviceData (devices)')
+                console.log(deviceData,' \ndeviceData (devices)')
                 deviceArray.push({name:name,info:deviceData})
             })
             setDevices(()=>deviceArray)
             setIsLoading(false)
         }
-        console.log('no response from api (Devices)')
+        // if response is null..
         setTimeout(()=>{setIsLoading(false)},2000)
         })
-        .catch(error=>console.log(error,'error in Devices'))
+        .catch(error=>{
+         Alert.alert('Device List Error',error)
+            console.log(error,'error in Devices')
+        })
+        
     
     },[])
 
@@ -57,11 +62,12 @@ export const Devices=({navigation})=>{
     }
 
     const handlePress=(item)=>{
-        console.log(item.name)
-        console.log(item.info)
+        console.log(`selected device ${item.name} (Devices)`)
+      
         setPowerMeterId(()=>item.info.id)
         setPowerMeterAuth(()=>item.info.authKey)
         setPowerMeterServer(()=>item.info.serverUrl)
+        setPowerMeterStartDate(()=>item.info.start_date)
         navigation.navigate('Power Meter')
     }
     return isLoading?<LoadingComponent/>:

@@ -1,9 +1,10 @@
 import {useEffect,useLayoutEffect,useState,useContext} from 'react';
+import {ResetStartDate} from '../components/ResetStartDate';
 import { getStatus } from '../shellyApi';
 import { getData } from '../phoneApi';
 import { StatusBar } from 'expo-status-bar';
-import {  Button, StyleSheet, Text, View,Pressable } from 'react-native';
-import { DateContext,PowerContext } from '../Contexts';
+import { StyleSheet, Text, View,Pressable,Alert } from 'react-native';
+import { PowerContext } from '../Contexts';
 
 export const PowerMeter=({navigation})=> {
   const timerInterval=2000;
@@ -21,24 +22,29 @@ export const PowerMeter=({navigation})=> {
   const [totalRate,setTotalRate] = useState(0);
   const [totalCost,setTotalCost] = useState(0);
   const [timer,setTimer] = useState(0);
+  const [startDate,setStartDate]=useState(null)
 
-  const {date,setDate} = useContext(DateContext);
+  
   const {powerMeterId,
         powerMeterServer,
-        powerMeterAuth}=useContext(PowerContext)
+        powerMeterAuth,
+        powerMeterStartDate,
+        setPowerMeterStartDate}=useContext(PowerContext)
 
 
 
 useLayoutEffect(()=>{
+ 
   if (powerMeterId) {
     getStatus(powerMeterId, powerMeterServer, powerMeterAuth)
       .then((response) => {
-        console.log(JSON.stringify(response, null, 1), 'response in app.js');
+        // console.log(JSON.stringify(response, null, 1), 'response in app.js');
         setOnlineStatus(response.data.online.toString());
         setTime(response.data.device_status.time);
         setPower((response.data.device_status.emeters[0].power / 1000).toFixed(3));
         setTotalEnergy((response.data.device_status.emeters[0].total / 1000).toFixed(3));
-        console.log(Object.keys(response.data.device_status), 'keys in app.js');
+        setStartDate(()=>powerMeterStartDate)
+        // console.log(Object.keys(response.data.device_status), 'keys in app.js');
 
 
 
@@ -46,19 +52,19 @@ useLayoutEffect(()=>{
 
       })
       .catch((error) => {
-        alert('Error in fetching data');
-        console.log(error, 'error in app.js');
+        Alert.alert('Error in fetching data (Power Meter)',error);
+        // console.log(error, 'error in app.js');
       })
   }
 
-},[timer,powerMeterId])
+},[timer,powerMeterId,startDate])
 
   useEffect(() => {
     if (powerMeterId) {
       getData('date')
         .then((response) => {
           if (response !== 'No Data Found') {
-            setDate(new Date(response));
+            setStartDate(new Date(response));
           }
         })
         .catch((error) => {
@@ -70,8 +76,8 @@ useLayoutEffect(()=>{
 
 
 useEffect(()=>{
-  setDaysInUse(calulateDays(today,date));
-},[date])
+  setDaysInUse(calulateDays(today,startDate));
+},[startDate])
 
 useEffect(()=>{
   setTotalStandingCharge((standingCharge*daysInUse).toFixed(2));
@@ -115,7 +121,7 @@ useEffect(()=>{
     <>   
      
      <View style={styles.container}>
-        {powerMeterId ?
+        {startDate?
           <>
             <Text style={styles.text}>Todays date:{today}</Text>
             <Text style={styles.text}>Online Status: {onlineStatus}</Text>
@@ -127,6 +133,9 @@ useEffect(()=>{
             <Text style={styles.text}>Subtotal power used: £{totalRate} </Text>
             <Text style={styles.text}>Overall Total Cost: £{totalCost} </Text>
             <StatusBar style="auto" />
+            <View style={{flex:0.4,alignItems:"center",justifyContent:"space-around"}}>
+      <ResetStartDate startDate={startDate} setStartDate={setPowerMeterStartDate} deviceId={powerMeterId}/>
+      </View>
           </>
           //if no power meter id
           : <>
@@ -146,7 +155,7 @@ useEffect(()=>{
 
 const styles = StyleSheet.create({
   container: {
-    flex: 0.6,
+    flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'space-around',

@@ -33,7 +33,7 @@ const validateDeviceId=(e)=>{
 
 const validateServerUrl = (e) => {
   const url = e.nativeEvent.text;
-  console.log(url.slice(0, 6));
+//   console.log(url.slice(0, 6));
   if (!url.endsWith(".shelly.cloud") || url.slice(0, 14) !== "https://shelly") {
     Alert.alert(
       "Invalid url",
@@ -45,7 +45,7 @@ const validateServerUrl = (e) => {
 
 const validateAuthKey=(e)=>{
     const key=e.nativeEvent.text;
-    console.log(key.length)
+    // console.log(key.length)
     if(key.length!=92){
         Alert.alert('Invalid Auth Key','Check accurate copy / paste / manual entry. Auth key must be 92 characters',[{text:'Ok', onPress:()=>authKeyRef.current.focus()}]);
     }
@@ -58,20 +58,21 @@ const submit=()=>{
 
     } else validateSubmit()
     .then(device_type=>{
-        console.log('back in submit')
+        // console.log('back in submit')
         if(device_type)
         {
-            console.log(device_type,'isValid in submit (Add Device)')
+            // console.log(device_type,'isValid in submit (Add Device)')
             return getData('devices')
             .then(devices=>{
-                console.log(devices,'devices before stringify')
+                // console.log(devices,'devices before stringify')
                
              
-                
-            return storeData('devices',{...devices,[deviceName.toString()]:{id:deviceId.toString(),serverUrl:serverUrl.toString(),authKey:authKey.toString(),device_type:device_type}})
+                const start_date=new Date
+                // console.log(start_date,'start date')
+            return storeData('devices',{...devices,[deviceName.toString()]:{id:deviceId.toString(),serverUrl:serverUrl.toString(),authKey:authKey.toString(),device_type:device_type,start_date:start_date}})
             })
             .then(response=>{
-                console.log(response)
+                // console.log(response)
                 if(response){
                     Alert.alert('Device added','Device has been added to the device list',[{text:'Add another device',onPress:()=>{setAuthKey(()=>'')
                     setDeviceId(()=>'')
@@ -85,12 +86,11 @@ const submit=()=>{
         }
     })
         .catch(error => {
-            console.log(error,'error in submit catch')
-            // Alert.alert(error.status.toString(),error.statusText.toString(),[{text:'Ok',onPress:()=>{setAuthKey(()=>'') }}])
+          
             if (error.status) {
-                console.log(error.status, 'back in submit catch block')
+                // console.log(error.status, 'back in submit catch block')
                 // console.log(JSON.stringify(error,null,2))
-                console.log(error.data.errors, typeof (error.data.errors))
+                // console.log(error.data.errors, typeof (error.data.errors))
                 const errorKeyArray = Object.keys(error.data.errors)
                 const errorArray = Object.values(error.data.errors)
                 let errorString = ''
@@ -126,10 +126,10 @@ console.log('submitting')
     const url=`${serverUrl}/device/status/?id=${deviceId}&auth_key=${authKey}`
         return testUrl(url)
         .then(response=>{
-            console.log(response)
+            // console.log(response)
         if(response.isok==true){
             //device exists in cloud
-            console.log('device exists in cloud validateSubmit (Add Device)')
+            // console.log('device exists in cloud validateSubmit (Add Device)')
             return response.data.device_status
         } else {
             return Promise.reject('Device not registered in cloud')
