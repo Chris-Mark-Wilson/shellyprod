@@ -2,10 +2,8 @@ import {useEffect,useLayoutEffect,useState,useContext} from 'react';
 import { getStatus } from '../shellyApi';
 import { getData } from '../phoneApi';
 import { StatusBar } from 'expo-status-bar';
-import {  StyleSheet, Text, View } from 'react-native';
+import {  Button, StyleSheet, Text, View,Pressable } from 'react-native';
 import { DateContext,PowerContext } from '../Contexts';
-
-
 
 export const PowerMeter=({navigation})=> {
   const timerInterval=2000;
@@ -136,6 +134,9 @@ useEffect(()=>{
               <Text style={styles.noDataText}>No Meter Selected</Text>
             </View>
           </>}
+          <Pressable onPress={()=>navigation.goBack()}>
+            <Text>Back</Text>
+          </Pressable>
     </View>
    
       </>
