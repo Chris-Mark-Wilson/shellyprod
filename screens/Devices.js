@@ -1,8 +1,86 @@
 import {View,Text,StyleSheet,Pressable,FlatList,Alert} from 'react-native';
 import React, { useEffect,useState,useContext } from 'react';
-
-import { getData } from '../phoneApi';
+import * as Notifications from 'expo-notifications';
+import * as Geolib from 'geolib';
+import * as BackgroundFetch from 'expo-background-fetch';
+import { getData,getLocationPermissions,getLocation } from '../phoneApi';
 import {PowerContext} from '../Contexts'
+
+import * as Location from 'expo-location';
+
+import * as TaskManager from 'expo-task-manager'
+
+let myGeofence={
+    
+    latitude:0,
+    longitude:0,
+    radius:10,
+    state:'inside'
+    // 0 is unknown, 1 is inside fence, 2 is outside fence
+}
+
+//background task called when geofencing event is triggered
+TaskManager.defineTask(
+  "isGeofenceTriggered",
+  async ({ data: { locations }, error }) => {
+    ////////////////////////////////////////////////////////
+    if (error) {
+      console.log(error, "error in isGeoFenceTriggered");
+      Alert.alert("Error", error);
+    }
+    //////////////////////////////////////////////////////
+    if (locations) {
+      console.log(locations[locations.length-1].coords.latitude,locations[locations.length-1].coords.longitude, "locations in taskmanager (devices)\n\n", myGeofence, "\n\n");
+      const lastLocation = locations[locations.length-1].coords;
+      if (lastLocation) {
+        if (Geolib.getDistance(lastLocation, myGeofence) < myGeofence.radius && myGeofence.state == "outside") {
+          console.log("inside geofence");
+          Notifications.scheduleNotificationAsync({
+            content: {
+              title: "Geofence Triggered",
+              body: "You are inside the geofence",
+            },
+            trigger: null,
+          });
+
+          myGeofence.state = "inside";
+
+        } else if(Geolib.getDistance(lastLocation,myGeofence)>myGeofence.radius && myGeofence.state=='inside'){
+          console.log("outside geofence");
+          Notifications.scheduleNotificationAsync({
+            content: {
+              title: "Geofence Triggered",
+              body: "You are outside the geofence",
+            },
+            trigger: null,
+          });
+
+          myGeofence.state = "outside";
+
+        }
+      }
+    }
+  }
+);
+
+//define a task to keep it going in the background or kill state
+TaskManager.defineTask('background-locations',async()=>{
+    Location.startLocationUpdatesAsync('isGeofenceTriggered',{
+        accuracy:Location.Accuracy.BestForNavigation,
+        timeInterval:2*60*1000, //2 minutes
+        showsBackgroundLocationIndicator:true})
+    })
+
+    //register the task
+const startBackgroundTask = async () => {
+    await BackgroundFetch.registerTaskAsync('background-locations',{
+        minumumInterval:60*15,
+        stopOnTerminate:false,
+        startOnBoot:true,
+    })
+}
+
+
 
 export const Devices=({navigation})=>{
     const [devices,setDevices]=useState([])
@@ -11,6 +89,38 @@ export const Devices=({navigation})=>{
             setPowerMeterServer,
             setPowerMeterAuth,
         setPowerMeterStartDate}=useContext(PowerContext)
+    
+        // const geoFence=useContext(GeoLocationContext)
+
+        useEffect(()=>{
+            // setUp geofencing
+            getData('geofence')
+            .then(geofence=>{
+                if(geofence){
+                    myGeofence={...geofence}
+                    console.log(myGeofence,'geofence in devices use effect')
+                }
+            
+            })
+            .then(()=>{
+            getLocationPermissions()
+            .then(response=>{
+                console.log(response,'permissions in devices use effect')
+                Location.startLocationUpdatesAsync('isGeofenceTriggered',{
+                    accuracy:Location.Accuracy.BestForNavigation,
+                    timeInterval:2*60*1000, //2 minutes
+                    
+                    showsBackgroundLocationIndicator:true})
+                .then(()=>{
+                   startBackgroundTask()
+                })
+            })
+        })
+            .catch(error=>{
+                Alert.alert('Error',error)
+                console.log(error,'error in devices use effect')    
+            })
+          },[])
 
     useEffect(()=>{
         setIsLoading(true)
@@ -24,7 +134,7 @@ export const Devices=({navigation})=>{
             deviceNames.forEach(device=>{
                 const deviceData=response[device]
                 const name=device
-                console.log(deviceData,' \ndeviceData (devices)')
+             // console.log(deviceData,' \ndeviceData (devices)')
                 deviceArray.push({name:name,info:deviceData})
             })
             setDevices(()=>deviceArray)

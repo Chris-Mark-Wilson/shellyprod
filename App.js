@@ -7,7 +7,10 @@ import { Devices } from "./screens/Devices";
 import { PowerMeter } from "./screens/PowerMeter";
 import { AddDevice } from "./screens/AddDevice";
 import { Settings } from "./screens/Settings";
-import { DateProvider, PowerProvider } from "./Contexts";
+import { DateProvider,PowerProvider,GeoLocationProvider } from "./Contexts";
+
+
+
 
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
@@ -41,23 +44,27 @@ const Drawers = () => {
 };
 
 export default function App() {
+  
+
   return (
     <DateProvider>
       <PowerProvider>
-        <NavigationContainer>
-          <Stack.Navigator screenOptions={{headerShown:false}}>
-            <Stack.Screen name="Drawers" component={Drawers} />
-            {/* power meter is hidden from drawer menu 
-            but is able to use the navigation prop*/}
-            <Stack.Screen
-        name="Power Meter"
-        component={PowerMeter}
-        options={{ unmountOnBlur: true }}
-        screenOptions={{headerShown:true}}
-      />
-      {/* other hidden screens go here */}
-          </Stack.Navigator>
-        </NavigationContainer>
+        <GeoLocationProvider>
+          <NavigationContainer>
+            <Stack.Navigator screenOptions={{headerShown:false}}>
+              <Stack.Screen name="Drawers" component={Drawers} />
+              {/* power meter is hidden from drawer menu 
+              but is able to use the navigation prop*/}
+              <Stack.Screen
+          name="Power Meter"
+          component={PowerMeter}
+          options={{ unmountOnBlur: true }}
+          screenOptions={{headerShown:true}}
+        />
+        {/* other hidden screens go here */}
+            </Stack.Navigator>
+          </NavigationContainer>
+        </GeoLocationProvider>
       </PowerProvider>
     </DateProvider>
   );

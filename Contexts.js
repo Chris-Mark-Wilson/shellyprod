@@ -26,3 +26,26 @@ export const PowerProvider=({children})=>{
                 </PowerContext.Provider>
     )
 }
+
+export const GeoLocationContext = createContext();
+export const GeoLocationProvider = ({ children }) => {
+  const [geoFence, setGeoFence] = useState({
+    location:{
+    latitude: 0,
+    longitude: 0},
+    radius: 0,
+    status:null
+  });
+
+  return (
+    <GeoLocationContext.Provider
+      value={{
+        geoFence,
+        setGeoFence,
+      }}
+    >
+      {children}
+    </GeoLocationContext.Provider>
+  );
+};
+    

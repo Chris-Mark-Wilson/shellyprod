@@ -8,8 +8,8 @@ export const AddDevice=({navigation})=>{
     //remove these hardcoded values for build
     const [deviceName,setDeviceName]=useState(null)
     const [deviceId,setDeviceId]=useState('244cab417976')
-    const [serverUrl,setServerUrl]=useState('https://shelly-94-eu.shelly.cloud')
-    const [authKey,setAuthKey]=useState('MjE5YmYwdWlk61D8E48A3D71F03B10965B9FCB1336EC3D54C78DBD5D2102C271EF8C76BBF09D1F74C1FA6259CC84')
+    const [serverUrl,setServerUrl]=useState('https://shelly-xx-eu.shelly.cloud')
+    const [authKey,setAuthKey]=useState('')
     const deviceNameRef=useRef(null)
     const IdRef=useRef(null)
     const urlRef=useRef(null)
@@ -37,7 +37,7 @@ const validateServerUrl = (e) => {
   if (!url.endsWith(".shelly.cloud") || url.slice(0, 14) !== "https://shelly") {
     Alert.alert(
       "Invalid url",
-      'url must begin with "shelly" and end with ".shelly.cloud"',
+      'url must begin with "https://shelly" and end with ".shelly.cloud"',
       [{ text: "Ok", onPress: () => urlRef.current.focus() }]
     );
   }
